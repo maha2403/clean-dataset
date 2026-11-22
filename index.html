@@ -1,0 +1,357 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clean Dataset | Data Analytics</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="brand">
+        <div class="brand-icon">D</div>
+        <span>DataClean</span>
+    </div>
+
+    <p class="menu-title">WORKSPACE</p>
+
+    <a href="/" class="menu-item active">▦ Dashboard</a>
+    <a href="#upload" class="menu-item">⇧ Upload Dataset</a>
+    <a href="#clean" class="menu-item">⚙ Data Cleaning</a>
+    <a href="#preview" class="menu-item">▤ Dataset Preview</a>
+
+    <div class="sidebar-bottom">
+        <div class="profile">
+            <div class="avatar">M</div>
+            <div>
+                <strong>Data Analyst</strong>
+                <small>Project Workspace</small>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<main class="main-content">
+
+    <header class="topbar">
+        <div>
+            <p class="breadcrumb">Workspace / Dashboard</p>
+            <h2>Dataset Cleaning Dashboard</h2>
+        </div>
+
+        <a href="{{ url_for('reset') }}" class="reset-btn">
+            ↻ Reset Workspace
+        </a>
+    </header>
+
+
+    <section class="welcome">
+
+        <div>
+            <p class="welcome-tag">DATA ANALYTICS TOOL</p>
+
+            <h1>Clean Your Data.<br>Improve Your Insights.</h1>
+
+            <p>
+                Upload your CSV dataset, identify data quality issues
+                and prepare clean data for analysis.
+            </p>
+        </div>
+
+        <div class="welcome-icon">📊</div>
+
+    </section>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+    <section class="section-heading">
+        <h2>Dataset Overview</h2>
+        <p>Monitor your dataset information and quality.</p>
+    </section>
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon blue">▤</div>
+            <p>Total Rows</p>
+            <h2>{{ stats.rows if stats else 0 }}</h2>
+            <small>Records in current dataset</small>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon purple">▥</div>
+            <p>Total Columns</p>
+            <h2>{{ stats.columns if stats else 0 }}</h2>
+            <small>Dataset attributes</small>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon orange">!</div>
+            <p>Missing Values</p>
+            <h2>{{ stats.missing if stats else 0 }}</h2>
+            <small>Empty data cells</small>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon red">⧉</div>
+            <p>Duplicate Rows</p>
+            <h2>{{ stats.duplicates if stats else 0 }}</h2>
+            <small>Repeated records</small>
+        </div>
+
+    </div>
+
+
+    <section class="content-grid">
+
+        <div class="panel" id="upload">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>Upload Dataset</h3>
+                    <p>Import your CSV file to get started.</p>
+                </div>
+                <span class="panel-symbol">⇧</span>
+            </div>
+
+            <form action="{{ url_for('upload') }}"
+                  method="POST"
+                  enctype="multipart/form-data">
+
+                <label for="file" class="upload-area">
+                    <div class="upload-icon">☁</div>
+                    <h3>Choose your CSV file</h3>
+                    <p>Click here to browse your computer</p>
+                    <small>CSV format | Maximum 16 MB</small>
+                </label>
+
+                <input type="file"
+                       id="file"
+                       name="file"
+                       accept=".csv"
+                       required>
+
+                <p id="file-name">No file selected</p>
+
+                <button type="submit" class="primary-btn">
+                    Upload Dataset →
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <div class="panel" id="clean">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>Data Cleaning Tools</h3>
+                    <p>Select the operations you want to perform.</p>
+                </div>
+                <span class="panel-symbol">⚙</span>
+            </div>
+
+            <form action="{{ url_for('clean') }}" method="POST">
+
+                <label class="clean-option">
+                    <input type="checkbox" name="duplicates" checked>
+                    <span>
+                        <strong>Remove Duplicates</strong>
+                        <small>Delete repeated records.</small>
+                    </span>
+                </label>
+
+                <label class="clean-option">
+                    <input type="checkbox" name="missing" checked>
+                    <span>
+                        <strong>Handle Missing Values</strong>
+                        <small>Fill numeric values with median
+                        and text values with mode.</small>
+                    </span>
+                </label>
+
+                <label class="clean-option">
+                    <input type="checkbox" name="empty_rows" checked>
+                    <span>
+                        <strong>Remove Empty Rows</strong>
+                        <small>Delete completely empty rows.</small>
+                    </span>
+                </label>
+
+                <button type="submit"
+                        class="primary-btn"
+                        {% if not uploaded %}disabled{% endif %}>
+                    ✨ Clean Dataset
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    {% if stats %}
+
+    <section class="panel summary-panel">
+
+        <div class="panel-heading">
+            <div>
+                <h3>Cleaning Summary</h3>
+                <p>Compare original and current dataset.</p>
+            </div>
+
+            {% if cleaned %}
+                <span class="status-badge">✓ Cleaned</span>
+            {% else %}
+                <span class="status-badge pending">
+                    Not cleaned yet
+                </span>
+            {% endif %}
+        </div>
+
+
+        <div class="summary-grid">
+
+            <div class="summary-item">
+                <span>Original Rows</span>
+                <strong>{{ stats.original_rows }}</strong>
+            </div>
+
+            <div class="summary-item">
+                <span>Current Rows</span>
+                <strong>{{ stats.rows }}</strong>
+            </div>
+
+            <div class="summary-item">
+                <span>Original Missing Values</span>
+                <strong>{{ stats.original_missing }}</strong>
+            </div>
+
+            <div class="summary-item">
+                <span>Current Missing Values</span>
+                <strong>{{ stats.missing }}</strong>
+            </div>
+
+            <div class="summary-item">
+                <span>Original Duplicates</span>
+                <strong>{{ stats.original_duplicates }}</strong>
+            </div>
+
+            <div class="summary-item">
+                <span>Current Duplicates</span>
+                <strong>{{ stats.duplicates }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="quality-card">
+
+            <h3>Data Quality Report</h3>
+
+            <h1>{{ stats.quality_score }}%</h1>
+
+            <div class="quality-progress">
+                <div class="quality-progress-fill"
+                     style="width: {{ stats.quality_score }}%">
+                </div>
+            </div>
+
+            <p>Missing Values: {{ stats.missing_percentage }}%</p>
+
+            <p>Duplicate Records: {{ stats.duplicate_percentage }}%</p>
+
+            <small>
+                Project-level score based on missing and duplicate
+                cell/row percentages.
+            </small>
+
+        </div>
+
+
+        {% if cleaned %}
+            <a href="{{ url_for('download') }}"
+               class="download-btn">
+                ↓ Download Cleaned CSV
+            </a>
+        {% endif %}
+
+    </section>
+
+
+    <section class="panel preview-panel" id="preview">
+
+        <div class="panel-heading">
+            <div>
+                <h3>Dataset Preview</h3>
+                <p>Showing the first 10 records.</p>
+            </div>
+
+            <span class="preview-label">LIVE DATA</span>
+        </div>
+
+        <div class="table-container">
+            {{ preview | safe }}
+        </div>
+
+    </section>
+
+    {% else %}
+
+    <section class="empty-state">
+        <div>📂</div>
+        <h3>No Dataset Uploaded</h3>
+        <p>Upload a CSV dataset to start cleaning your data.</p>
+    </section>
+
+    {% endif %}
+
+
+    <footer>
+        <p>Clean Dataset Application | Data Analytics Project</p>
+        <p>Built with Python, Flask, Pandas, HTML & CSS</p>
+    </footer>
+
+</main>
+
+
+<script>
+    const fileInput = document.getElementById("file");
+    const fileName = document.getElementById("file-name");
+
+    fileInput.addEventListener("change", function () {
+
+        if (this.files.length > 0) {
+            fileName.textContent =
+                "Selected: " + this.files[0].name;
+        } else {
+            fileName.textContent = "No file selected";
+        }
+
+    });
+</script>
+
+</body>
+</html>
